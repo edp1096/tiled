@@ -76,7 +76,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: mapeditor/qaseprite
-        path: tiled-source/qaseprite
+        path: qaseprite
         ref: '1.0.3'
 
     - name: Install Qt
@@ -118,7 +118,7 @@ jobs:
         popd
 
     - name: Install qaseprite plugin
-      working-directory: tiled-source/qaseprite
+      working-directory: qaseprite
       run: |
         ./update-submodules.sh
         pushd aseprite/laf
