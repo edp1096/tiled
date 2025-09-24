@@ -110,6 +110,7 @@ jobs:
         qbs config defaultProfile qt
 
     - name: Build Zstandard dependency
+      working-directory: tiled-source
       run: |
         git clone --depth 1 -b release https://github.com/facebook/zstd.git
         pushd zstd/lib
