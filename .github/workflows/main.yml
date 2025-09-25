@@ -41,7 +41,7 @@ jobs:
       fail-fast: false  # Don't cancel other jobs if one fails
       matrix:
         include:
-        - qt_version: 6.9.2
+        - qt_version: 6.8.1
           qt_version_major: 6
           qt_arch: win64_mingw
           qt_modules: "qtimageformats"
