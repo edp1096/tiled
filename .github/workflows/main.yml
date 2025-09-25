@@ -33,7 +33,7 @@ jobs:
         echo "tiled_tag=$TILED_TAG" >> $GITHUB_OUTPUT
 
   build-windows:
-    name: Windows (${{ matrix.arch }}-bit, Qt ${{ matrix.qt_version_major }})
+    name: Windows (64-bit, Qt ${{ matrix.qt_version_major }})
     runs-on: windows-latest
     needs: version
 
@@ -41,21 +41,12 @@ jobs:
       fail-fast: false  # Don't cancel other jobs if one fails
       matrix:
         include:
-        - qt_version: 5.15.2
-          qt_version_major: 5
-          qt_arch: win32_mingw81
-          qt_modules: ""
-          arch: 32
-          filename_suffix: 'Windows-7-8_x86'
-          mingw_component: tools_mingw
-          mingw_variant: qt.tools.win32_mingw810
-          mingw_dir: mingw810_32
         - qt_version: 6.9.2
           qt_version_major: 6
           qt_arch: win64_mingw
           qt_modules: "qtimageformats"
           arch: 64
-          filename_suffix: 'Windows-10+_x86_64'
+          filename_suffix: 'windows_amd64'
           mingw_component: tools_mingw1310
           mingw_variant: qt.tools.win64_mingw1310
           mingw_dir: mingw1310_64
@@ -183,24 +174,22 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          Tiled-${{ needs.version.outputs.tiled_tag }}-build${{ needs.version.outputs.padded_build }}_Windows-7-8_x86/*.zip
           Tiled-${{ needs.version.outputs.tiled_tag }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64/*.zip
         tag_name: ${{ needs.version.outputs.tiled_tag }}-build-${{ needs.version.outputs.padded_build }}
         name: Tiled ${{ needs.version.outputs.tiled_tag }} Build ${{ needs.version.outputs.padded_build }}
         body: |
           Automated build of Tiled ${{ needs.version.outputs.tiled_tag }} for Windows
 
-          Built from upstream Tiled repository ${{ needs.version.outputs.tiled_tag }} with MinGW-w64 and Qt
+          Built from upstream Tiled repository ${{ needs.version.outputs.tiled_tag }} with MinGW-w64 and Qt 6
           Build number: ${{ needs.version.outputs.padded_build }}
           Commit: ${{ github.sha }}
-          Source tag: ${{ needs.version.outputs.tiled_tag }}
+          Source branch: ${{ needs.version.outputs.tiled_tag }}
 
-          **Downloads:**
-          - Windows x86 (32-bit): `Tiled-${{ needs.version.outputs.tiled_tag }}-build${{ needs.version.outputs.padded_build }}_Windows-7-8_x86.zip`
+          **Download:**
           - Windows x64 (64-bit): `Tiled-${{ needs.version.outputs.tiled_tag }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64.zip`
 
           This build includes:
-          - Tiled Map Editor ${{ needs.version.outputs.tiled_tag }}
+          - Tiled Map Editor (latest development version)
           - All plugins and dependencies
           - Qt runtime libraries
         draft: false
