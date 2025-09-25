@@ -7,6 +7,7 @@ on:
 
 env:
   TILED_REPO: "https://github.com/mapeditor/tiled.git"
+  TILED_TAG: "v1.11.2"  # Specify the Tiled version to build
   QBS_VERSION: 2.4.1
   CMAKE_VERSION: 3.31
 
@@ -49,7 +50,7 @@ jobs:
           mingw_dir: mingw1310_64
 
     env:
-      TILED_VERSION: ${{ needs.version.outputs.version }}
+      TILED_VERSION: ${{ env.TILED_TAG }}
 
     defaults:
       run:
@@ -61,8 +62,8 @@ jobs:
 
     - name: Clone Tiled repository with submodules
       run: |
-        git clone --recursive ${{ env.TILED_REPO }} tiled-source
-        echo "Tiled cloned successfully"
+        git clone --branch ${{ env.TILED_TAG }} --recursive ${{ env.TILED_REPO }} tiled-source
+        echo "Tiled ${{ env.TILED_TAG }} cloned successfully"
 
     - name: Checkout qaseprite dependency
       uses: actions/checkout@v5
@@ -147,13 +148,13 @@ jobs:
       run: |
         mkdir -p ../output
         pushd release/install-root
-        7z a -tzip "../../../output/Tiled-${{ needs.version.outputs.version }}-build${{ needs.version.outputs.padded_build }}_${{ matrix.filename_suffix }}.zip" *
+        7z a -tzip "../../../output/Tiled-${{ env.TILED_TAG }}-build${{ needs.version.outputs.padded_build }}_${{ matrix.filename_suffix }}.zip" *
         popd
 
     - name: Upload Tiled archive
       uses: actions/upload-artifact@v4
       with:
-        name: Tiled-${{ needs.version.outputs.version }}-build${{ needs.version.outputs.padded_build }}_${{ matrix.filename_suffix }}
+        name: Tiled-${{ env.TILED_TAG }}-build${{ needs.version.outputs.padded_build }}_${{ matrix.filename_suffix }}
         path: output/*.zip
 
   release:
@@ -170,21 +171,22 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          Tiled-${{ needs.version.outputs.version }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64/*.zip
-        tag_name: v${{ needs.version.outputs.version }}-build-${{ needs.version.outputs.padded_build }}
-        name: Tiled ${{ needs.version.outputs.version }} Build ${{ needs.version.outputs.padded_build }}
+          Tiled-${{ env.TILED_TAG }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64/*.zip
+        tag_name: ${{ env.TILED_TAG }}-build-${{ needs.version.outputs.padded_build }}
+        name: Tiled ${{ env.TILED_TAG }} Build ${{ needs.version.outputs.padded_build }}
         body: |
-          Automated build of Tiled ${{ needs.version.outputs.version }} for Windows
+          Automated build of Tiled ${{ env.TILED_TAG }} for Windows
 
-          Built from upstream Tiled repository with MinGW-w64 and Qt 6
+          Built from upstream Tiled repository ${{ env.TILED_TAG }} with MinGW-w64 and Qt 6
           Build number: ${{ needs.version.outputs.padded_build }}
           Commit: ${{ github.sha }}
+          Source tag: ${{ env.TILED_TAG }}
 
           **Download:**
-          - Windows x64 (64-bit): `Tiled-${{ needs.version.outputs.version }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64.zip`
+          - Windows x64 (64-bit): `Tiled-${{ env.TILED_TAG }}-build${{ needs.version.outputs.padded_build }}_Windows-10+_x86_64.zip`
 
           This build includes:
-          - Tiled Map Editor
+          - Tiled Map Editor ${{ env.TILED_TAG }}
           - All plugins and dependencies
           - Qt runtime libraries
         draft: false
