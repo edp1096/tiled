@@ -133,6 +133,42 @@ jobs:
       run: |
         qbs build config:release projects.Tiled.staticZstd:true
 
+    - name: Deploy Qt dependencies
+      working-directory: tiled-source
+      run: |
+        # Create deployment directory
+        mkdir -p deploy
+        
+        # Copy built application to deployment directory
+        cp -r release/install-root/* deploy/
+        
+        # Find the main Tiled executable
+        TILED_EXE=$(find deploy -name "tiled.exe" -o -name "Tiled.exe" | head -1)
+        
+        if [ -z "$TILED_EXE" ]; then
+          echo "Error: Could not find Tiled executable"
+          find deploy -name "*.exe" -type f
+          exit 1
+        fi
+        
+        echo "Found Tiled executable: $TILED_EXE"
+        
+        # Use windeployqt to deploy Qt dependencies
+        export QT_ROOT_DIR="${QT_ROOT_DIR//D:/\/d}"
+        export QT_ROOT_DIR="${QT_ROOT_DIR//\\/\/}"
+        export PATH="${QT_ROOT_DIR}/bin:$PATH"
+        
+        # Deploy Qt dependencies
+        windeployqt.exe --no-translations --no-system-d3d-compiler --no-opengl-sw --release "$TILED_EXE"
+        
+        # Also deploy other executables if they exist
+        find deploy -name "*.exe" -type f ! -path "*/deploy/*" | while read exe; do
+          if [ "$exe" != "$TILED_EXE" ]; then
+            echo "Deploying Qt dependencies for: $exe"
+            windeployqt.exe --no-translations --no-system-d3d-compiler --no-opengl-sw --release "$exe"
+          fi
+        done
+
     - name: Set padded build number
       run: |
         echo "PADDED_BUILD=${{ needs.version.outputs.padded_build }}" >> $GITHUB_ENV
@@ -141,7 +177,7 @@ jobs:
       working-directory: tiled-source
       run: |
         mkdir -p ../output
-        pushd release/install-root
+        pushd deploy
         7z a -tzip "../../../output/Tiled-${{ needs.version.outputs.version }}-build${{ needs.version.outputs.padded_build }}_${{ matrix.filename_suffix }}.zip" *
         popd
 
@@ -184,6 +220,7 @@ jobs:
           - Tiled Map Editor
           - All plugins and dependencies
           - Qt runtime libraries
+          - Complete standalone installation
         draft: false
         prerelease: false
       env:
